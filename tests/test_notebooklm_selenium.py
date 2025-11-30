@@ -152,30 +152,23 @@ def test_verify_exact_passage_link(driver, wait):
     # Optional: you could add an assertion that at least one highlighted span exists
     assert passage_text, "No highlighted spans found in the source passage."
 
-    # --- Semantic similarity scoring ---
-    # Compute embeddings for the AI answer (expected) and the source passage (actual)
-    model = EmbeddingModel()
-    texts = [answer_text_snippet.strip(), passage_text.strip()]
-    embs = model.embed(texts)
-
-    # compute cosine similarity between the two vectors
-    a = embs[0]
-    b = embs[1]
-    sim = float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-12))
-    print(f"Semantic cosine similarity: {sim:.4f}")
-
-    # Save score to artifacts dir (if set)
+    # --- Write artifacts for offline scoring ---
     artifacts_dir = Path(os.environ.get("NOTEBOOKLM_ARTIFACTS", "artifacts"))
     artifacts_dir.mkdir(parents=True, exist_ok=True)
-    score_path = artifacts_dir / "semantic_score.txt"
-    score_path.write_text(f"{sim:.6f}\n", encoding="utf-8")
 
-    # threshold comparison (configurable via env var)
+    # Write expected (source/passage) and actual (AI answer) files for reuse
+    expected_path = artifacts_dir / "expected.txt"
+    actual_path = artifacts_dir / "actual.txt"
+    expected_path.write_text(passage_text or "", encoding="utf-8")
+    actual_path.write_text(answer_text_snippet or "", encoding="utf-8")
+
+    # Use the reusable offline scoring helper to compute and write the semantic score
+    from scripts.offline_scoring import compute_and_write_score
+
     try:
         threshold = float(os.environ.get("SEMANTIC_SIM_THRESHOLD", "0.65"))
     except Exception:
         threshold = 0.65
 
-    assert sim >= threshold, (
-        f"Semantic similarity {sim:.4f} is below threshold {threshold:.4f}"
-    )
+    sim = compute_and_write_score(artifacts_dir, threshold=threshold)
+    print(f"Semantic cosine similarity: {sim:.6f}")

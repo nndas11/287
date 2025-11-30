@@ -6,3 +6,6 @@ faiss-cpu; platform_system != 'Darwin'  # optional: may not be available on macO
 fastapi>=0.95
 uvicorn[standard]>=0.22
 pytest>=7.0
+beautifulsoup4>=4.11
+selenium>=4.8
+webdriver-manager>=3.8.5

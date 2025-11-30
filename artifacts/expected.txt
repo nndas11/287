@@ -1,0 +1,1 @@
+Test coverage is the measure of how much of a system is exercised by testing. Test complexity refers to the difficulty of designing, executing, and maintaining tests. Accuracy means the degree to which a result matches the true value. Consistency refers to the stability of results when the same process is repeated.

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -67,15 +67,14 @@ def similarity(req: SimilarityRequest):
 def similarity_search(req: SearchRequest):
     """Search corpus for query and return paginated results sorted by score.
 
-    If `corpus` is omitted, the endpoint will use the sample data file from `examples/data/sample_sentences.csv`.
+    Note: The project no longer ships the `examples/data/sample_sentences.csv`
+    dataset. Please provide a `corpus` in the request (list of strings). If you
+    prefer a default corpus, recreate that file at `examples/data/sample_sentences.csv`.
     """
     if req.corpus is None:
-        # lazy load sample corpus
-        try:
-            with open("examples/data/sample_sentences.csv", newline='') as f:
-                corpus = [line.strip() for line in f if line.strip()]
-        except Exception:
-            return {"results": [], "total": 0}
+        raise HTTPException(status_code=400, detail=(
+            "No corpus provided. Supply `corpus` (List[str]) in the request, or recreate "
+            "the sample dataset 'examples/data/sample_sentences.csv' if you need a default."))
     else:
         corpus = req.corpus
 
