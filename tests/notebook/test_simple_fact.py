@@ -26,27 +26,7 @@ TEST_QUERY = "What is the capital of France?"
 EXPECTED_SOURCE_TITLE = "City Data.md"
 
 
-@pytest.fixture(scope="session")
-def driver():
-    chrome_options = Options()
-
-    # Dedicated Selenium profile that is already logged into Google
-    chrome_options.add_argument(
-        "user-data-dir=/Users/gayathri/Documents/SJSU/selenium-profile"
-    )
-
-    service = Service()
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    driver.maximize_window()
-
-    yield driver
-
-    driver.quit()
-
-
-@pytest.fixture
-def wait(driver):
-    return WebDriverWait(driver, 120)
+# Using shared `driver` and `wait` fixtures from `tests/conftest.py`
 
 
 def test_verify_exact_passage_link(driver, wait):
@@ -168,7 +148,8 @@ def test_verify_exact_passage_link(driver, wait):
     except Exception:
         threshold = 0.65
 
-    sim = compute_and_write_score(artifacts_dir, threshold=threshold)
+    test_name = f"{Path(__file__).stem}::{TEST_QUERY}"
+    sim = compute_and_write_score(artifacts_dir, threshold=threshold, test_name=test_name)
     print(f"Semantic cosine similarity: {sim:.6f}")
     assert sim >= threshold, (
         f"Semantic similarity {sim:.4f} is below threshold {threshold}"

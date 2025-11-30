@@ -17,7 +17,9 @@ def compute_and_write_score(artifacts_dir: str | Path = "./artifacts",
                             expected_fname: str = "expected.txt",
                             actual_fname: str = "actual.txt",
                             score_fname: str = "semantic_score.txt",
-                            threshold: float | None = None) -> float:
+                            threshold: float | None = None,
+                            test_name: str | None = None,
+                            results_fname: str = "semantic_results.csv") -> float:
     artifacts_dir = Path(artifacts_dir)
     expected_path = artifacts_dir / expected_fname
     actual_path = artifacts_dir / actual_fname
@@ -38,6 +40,35 @@ def compute_and_write_score(artifacts_dir: str | Path = "./artifacts",
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     score_path = artifacts_dir / score_fname
     score_path.write_text(f"{sim}\n", encoding="utf-8")
+
+    # Append a summary row to a CSV file for multi-test reporting.
+    # Columns: timestamp_iso, test_name, expected, actual, semantic_score
+    try:
+        import csv
+        from datetime import datetime
+
+        results_path = artifacts_dir / results_fname
+        header = ["timestamp", "test_name", "expected", "actual", "semantic_score"]
+
+        # sanitize expected/actual to single-line strings
+        exp_single = " ".join(expected.splitlines())
+        act_single = " ".join(actual.splitlines())
+
+        write_header = not results_path.exists()
+        with results_path.open("a", encoding="utf-8", newline="") as csvf:
+            writer = csv.writer(csvf)
+            if write_header:
+                writer.writerow(header)
+            writer.writerow([
+                datetime.utcnow().isoformat() + "Z",
+                test_name or "",
+                exp_single,
+                act_single,
+                f"{sim:.6f}",
+            ])
+    except Exception:
+        # Do not fail scoring if reporting fails; log to stdout instead
+        print("Warning: failed to write results CSV")
 
     if threshold is not None and sim < float(threshold):
         raise AssertionError(f"Semantic similarity {sim:.6f} is below threshold {threshold}")

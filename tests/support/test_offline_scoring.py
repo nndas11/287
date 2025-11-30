@@ -24,5 +24,5 @@ def test_offline_scoring():
     if not os.path.exists(expected_path) or not os.path.exists(actual_path):
         pytest.skip("Offline artifact files not present: expected.txt / actual.txt")
 
-    sim = compute_and_write_score(ART_DIR, threshold=THRESHOLD)
+    sim = compute_and_write_score(ART_DIR, threshold=THRESHOLD, test_name="support.test_offline_scoring")
     assert sim >= THRESHOLD, f"Semantic similarity {sim:.4f} is below threshold {THRESHOLD}"
