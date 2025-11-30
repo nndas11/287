@@ -21,9 +21,9 @@ from semantic import EmbeddingModel
 
 # CONFIG – change these as needed
 NOTEBOOKLM_URL = "https://notebooklm.google.com/"
-NOTEBOOK_NAME = "Core Metrics of Software Quality Testing"  # existing
-TEST_QUERY = "what is test complexity?"
-EXPECTED_SOURCE_TITLE = "Test Coverage.txt"
+NOTEBOOK_NAME = "Chromatic Roots and Derivatives"  # existing
+TEST_QUERY = "what is Artificial Intelligence?"
+EXPECTED_SOURCE_TITLE = "Primary Colors and Secondary Derivatives"
 
 
 @pytest.fixture(scope="session")
@@ -35,15 +35,13 @@ def driver():
         "user-data-dir=/Users/gayathri/Documents/SJSU/selenium-profile"
     )
 
-    # Selenium 4+ can usually manage chromedriver automatically
     service = Service()
     driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.maximize_window()
 
     yield driver
 
-    # Do not quit the driver here to allow multiple tests in the session
-    # driver.quit()
+    driver.quit()
 
 
 @pytest.fixture
@@ -172,3 +170,6 @@ def test_verify_exact_passage_link(driver, wait):
 
     sim = compute_and_write_score(artifacts_dir, threshold=threshold)
     print(f"Semantic cosine similarity: {sim:.6f}")
+    assert sim >= threshold, (
+        f"Semantic similarity {sim:.4f} is below threshold {threshold}"
+    )   
