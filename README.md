@@ -18,10 +18,6 @@ Minimal Python project focused on semantic analysis and similarity search.
 
 - Open the minimal web UI at `http://127.0.0.1:8000/static/index.html` after the server starts.
 
-**Demo note**
-
-- The original `examples/demo.py` and bundled sample dataset were removed during cleanup.
-- To run a quick local demo, either recreate `examples/demo.py` with your corpus or use the scripts under `scripts/` (for example, `scripts/open_notebooklm.py` for page capture).
 
 **Running tests**
 
