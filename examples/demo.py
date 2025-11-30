@@ -1,5 +1,7 @@
 """Demo script showing embeddings and top-k similarity."""
 from semantic import EmbeddingModel, top_k_cosine
+"""Demo script showing embeddings and top-k similarity."""
+from semantic import EmbeddingModel, top_k_cosine
 import csv
 
 
