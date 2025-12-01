@@ -1,6 +1,6 @@
 # Semantic Similarity Project
 
-Minimal Python project focused on semantic analysis and similarity search.
+A Python project focused on semantic analysis and similarity search.
 
 **Quick Start**
 
@@ -57,7 +57,7 @@ Minimal Python project focused on semantic analysis and similarity search.
 - Browser tests write extracted texts and a computed semantic similarity score into the `NOTEBOOKLM_ARTIFACTS` directory (by default `./artifacts`).
 - The Selenium test (`tests/test_notebooklm_selenium.py`) computes embeddings with `sentence-transformers` and writes a score file (`semantic_score.txt`). You can run a separate offline scoring test by creating two text files (expected/actual) in the artifacts folder and computing similarity with the `semantic` package.
 
-**New: Helpers for artifact extraction and offline scoring**
+**Helpers for artifact extraction and offline scoring**
 
 This repo includes two helper scripts to standardize the flow from browser capture -> artifact extraction -> offline scoring:
 
@@ -113,7 +113,7 @@ Viewing aggregated results
 
 - You can also load the CSV into a spreadsheet or use Python/pandas for analysis.
 
-Example: run multiple Selenium tests (single Chrome session) and then view the CSV
+You can run multiple Selenium tests (single Chrome session) and then view the CSV
 
 ```bash
 RUN_SELENIUM=1 USER_DATA_DIR=/tmp/selenium-profile-copy NOTEBOOKLM_ARTIFACTS=./artifacts .venv/bin/python -m pytest -q tests/notebook
@@ -122,18 +122,11 @@ cat ./artifacts/semantic_results.csv
 
 Notes:
 
-- The Selenium test was updated to write `expected.txt` and `actual.txt` directly and then call the scoring helper; that is the simplest and most robust flow.
-- If the NotebookLM DOM changes or your artifact filenames differ, update `scripts/generate_expected_actual.py` selectors accordingly or write `expected.txt`/`actual.txt` directly from the capture script.
+- The Selenium test writes `expected.txt` and `actual.txt` directly and then call the scoring helper;
+
+- If the NotebookLM DOM changes or the artifact filenames differ, update `scripts/generate_expected_actual.py` selectors accordingly or write `expected.txt`/`actual.txt` directly from the capture script.
 
 **Selenium notes / troubleshooting**
 
 - If you see `session not created: Chrome instance exited`, it often means the Chrome profile is in use or incompatible with the driver. Close Chrome, or pass a copy of the profile to `USER_DATA_DIR`.
 - If you prefer isolation, run Chrome with a fresh temporary profile (omit `USER_DATA_DIR`) so Chrome/Chromedriver create a new profile for the test run.
-
-**Contributing**
-
-- Fixes and improvements welcome. Open a PR with small, focused commits. If you change dependencies, update `requirements.txt` and note platform-specific packages (e.g., `faiss-cpu` may not be available on macOS).
-
-**Contact / Next steps**
-
-- For help running the browser tests or creating an offline scoring harness, tell me which environment you prefer (local Chrome, headless CI, Playwright) and I can add a ready-to-run pytest wrapper.
