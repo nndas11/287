@@ -1,0 +1,6 @@
+test_name,count,mean,median
+test_simple_fact::What is the capital of France?,3,0.768881,0.763667
+test_exact_definition::what is test complexity?,5,0.796630,0.710534
+test_list_answer::List three primary colors in traditional color theory.,2,0.899485,0.899485
+test_multi_fact::Name two advantages of automated software testing.,1,0.729514,0.729514
+test_non_available_content::what is Artificial Intelligence?,1,0.837410,0.837410

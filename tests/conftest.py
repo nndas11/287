@@ -26,7 +26,7 @@ def driver():
     user_data = os.environ.get("USER_DATA_DIR")
     temp_profile = None
     if user_data:
-        # Use provided profile directory (caller should ensure it's not in use)
+        # Use provided profile directory
         chrome_options.add_argument(f"user-data-dir={user_data}")
     else:
         # Use a temporary profile in headless mode to avoid interfering with local Chrome

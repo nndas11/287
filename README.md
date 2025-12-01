@@ -18,7 +18,6 @@ Minimal Python project focused on semantic analysis and similarity search.
 
 - Open the minimal web UI at `http://127.0.0.1:8000/static/index.html` after the server starts.
 
-
 **Running tests**
 
 - Run the unit tests (fast):
@@ -70,6 +69,18 @@ This repo includes two helper scripts to standardize the flow from browser captu
 
 - `scripts/offline_scoring.py` — Reusable scoring helper (importable) that reads `expected.txt` and `actual.txt` from the artifacts directory, computes embeddings using the `semantic` package, writes `semantic_score.txt`, and returns the similarity score. It optionally enforces a threshold (raises an AssertionError if the score is below the configured threshold).
 
+  The helper also appends a summary row to `semantic_results.csv` (in the same
+  artifacts directory) for multi-test reporting. Each CSV row contains:
+
+  - `timestamp` (ISO 8601 UTC, timezone-aware)
+  - `test_name` (a short identifier provided by the caller)
+  - `expected` (single-line source/passage text)
+  - `actual` (single-line answer text)
+  - `semantic_score` (floating score with 6 decimals)
+
+  When calling the helper programmatically you can pass `test_name` to label
+  each row. The CSV filename can be changed with the `results_fname` argument.
+
 Example workflow (end-to-end):
 
 1. Run the Selenium/Playwright capture so the NotebookLM page HTML is saved under the artifacts directory (default `./artifacts`).
@@ -90,6 +101,23 @@ NOTEBOOKLM_ARTIFACTS=./artifacts SEMANTIC_SIM_THRESHOLD=0.65 python -c "from scr
 
 ```bash
 NOTEBOOKLM_ARTIFACTS=./artifacts SEMANTIC_SIM_THRESHOLD=0.65 .venv/bin/python -m pytest -q tests/test_offline_scoring.py
+```
+
+Viewing aggregated results
+
+- After running one or more tests that call the scoring helper, open the CSV:
+
+  ```bash
+  cat ./artifacts/semantic_results.csv | sed -n '1,200p'
+  ```
+
+- You can also load the CSV into a spreadsheet or use Python/pandas for analysis.
+
+Example: run multiple Selenium tests (single Chrome session) and then view the CSV
+
+```bash
+RUN_SELENIUM=1 USER_DATA_DIR=/tmp/selenium-profile-copy NOTEBOOKLM_ARTIFACTS=./artifacts .venv/bin/python -m pytest -q tests/notebook
+cat ./artifacts/semantic_results.csv
 ```
 
 Notes:

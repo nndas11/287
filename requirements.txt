@@ -9,3 +9,5 @@ pytest>=7.0
 beautifulsoup4>=4.11
 selenium>=4.8
 webdriver-manager>=3.8.5
+matplotlib>=3.6.3
+pytest-html>=3.2.0

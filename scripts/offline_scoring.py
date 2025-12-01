@@ -45,7 +45,7 @@ def compute_and_write_score(artifacts_dir: str | Path = "./artifacts",
     # Columns: timestamp_iso, test_name, expected, actual, semantic_score
     try:
         import csv
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         results_path = artifacts_dir / results_fname
         header = ["timestamp", "test_name", "expected", "actual", "semantic_score"]
@@ -59,8 +59,9 @@ def compute_and_write_score(artifacts_dir: str | Path = "./artifacts",
             writer = csv.writer(csvf)
             if write_header:
                 writer.writerow(header)
+            # Use timezone-aware UTC timestamp
             writer.writerow([
-                datetime.utcnow().isoformat() + "Z",
+                datetime.now(timezone.utc).isoformat(),
                 test_name or "",
                 exp_single,
                 act_single,

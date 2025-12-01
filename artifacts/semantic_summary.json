@@ -1,0 +1,37 @@
+{
+  "summary": {
+    "count": 12,
+    "mean": 0.8046405833333332,
+    "median": 0.7732595,
+    "std": 0.08412090585526122,
+    "min": 0.710534,
+    "max": 0.932856
+  },
+  "per_test": {
+    "test_simple_fact::What is the capital of France?": {
+      "count": 3,
+      "mean": 0.7688806666666667,
+      "median": 0.763667
+    },
+    "test_exact_definition::what is test complexity?": {
+      "count": 5,
+      "mean": 0.7966300000000001,
+      "median": 0.710534
+    },
+    "test_list_answer::List three primary colors in traditional color theory.": {
+      "count": 2,
+      "mean": 0.8994854999999999,
+      "median": 0.8994854999999999
+    },
+    "test_multi_fact::Name two advantages of automated software testing.": {
+      "count": 1,
+      "mean": 0.729514,
+      "median": 0.729514
+    },
+    "test_non_available_content::what is Artificial Intelligence?": {
+      "count": 1,
+      "mean": 0.83741,
+      "median": 0.83741
+    }
+  }
+}
