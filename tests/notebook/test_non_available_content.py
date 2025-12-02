@@ -22,14 +22,14 @@ from semantic import EmbeddingModel
 # CONFIG – change these as needed
 NOTEBOOKLM_URL = "https://notebooklm.google.com/"
 NOTEBOOK_NAME = "Chromatic Roots and Derivatives"  # existing
-TEST_QUERY = "what is Artificial Intelligence?"
+TEST_QUERY = "what is Artificial Intelligence in Software Testing Industry?"
 EXPECTED_SOURCE_TITLE = "Primary Colors and Secondary Derivatives"
 
 
 # Using shared `driver` and `wait` fixtures from `tests/conftest.py`
 
 
-def test_verify_exact_passage_link(driver, wait):
+def test_non_available_content(driver, wait):
     # 1. Go to NotebookLM home
     driver.get(NOTEBOOKLM_URL)
 
