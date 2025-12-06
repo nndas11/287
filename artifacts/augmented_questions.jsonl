@@ -1,0 +1,9 @@
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "List three primary colors in traditional color theory.", "augmented": "```json", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "List three primary colors in traditional color theory.", "augmented": "[", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "List three primary colors in traditional color theory.", "augmented": "\"Name three basic colors used in traditional color theory.\",", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "What is test complexity?", "augmented": "Define test complexity.", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "What is test complexity?", "augmented": "Explain the concept of test complexity.", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "What is test complexity?", "augmented": "How would you describe test complexity?", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "Name two advantages of automated software testing.", "augmented": "List two benefits of using automated software testing.", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "Name two advantages of automated software testing.", "augmented": "Identify two advantages of automated testing in software development.", "method": "openai"}
+{"timestamp": "2025-12-06T07:32:25.141660+00:00", "original": "Name two advantages of automated software testing.", "augmented": "What are two reasons why automated software testing is beneficial?", "method": "openai"}

@@ -1,0 +1,3 @@
+List three primary colors in traditional color theory.
+What is test complexity?
+Name two advantages of automated software testing.
