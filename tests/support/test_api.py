@@ -1,6 +1,7 @@
 import sys
 import types
 import numpy as np
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -19,8 +20,26 @@ class DummySentenceTransformer:
         return np.array(arr, dtype=float)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_sys_modules():
+    """Snapshot and restore sys.modules so the dummy doesn't leak into other tests."""
+    snapshot = dict(sys.modules)
+    yield
+    # Remove any keys added during the test
+    for key in list(sys.modules):
+        if key not in snapshot:
+            del sys.modules[key]
+    # Restore keys that existed before (catches replacements like the dummy)
+    sys.modules.update(snapshot)
+
+
 def setup_dummy_sentence_transformers():
-    # insert a fake sentence_transformers module before importing app to avoid heavy downloads
+    # Evict already-cached modules that hold a reference to the real SentenceTransformer
+    # so they re-import fresh and pick up the dummy below.
+    for key in list(sys.modules):
+        if key.startswith("semantic") or key.startswith("api"):
+            sys.modules.pop(key, None)
+    # Insert a fake sentence_transformers module to avoid heavy model downloads.
     mod = types.ModuleType("sentence_transformers")
     mod.SentenceTransformer = DummySentenceTransformer
     sys.modules["sentence_transformers"] = mod

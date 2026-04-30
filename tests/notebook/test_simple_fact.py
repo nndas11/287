@@ -23,7 +23,7 @@ from semantic import EmbeddingModel
 NOTEBOOKLM_URL = "https://notebooklm.google.com/"
 NOTEBOOK_NAME = "Nations and Numbers"  # existing
 TEST_QUERY = "What is the capital of France?"
-EXPECTED_SOURCE_TITLE = "City Data.md"
+EXPECTED_SOURCE_TITLE = os.environ.get("EXPECTED_SOURCE_TITLE", "City Data.md")
 
 
 # Using shared `driver` and `wait` fixtures from `tests/conftest.py`
@@ -34,88 +34,135 @@ def test_verify_exact_passage_link(driver, wait):
     driver.get(NOTEBOOKLM_URL)
 
     # 2. Open the specific notebook by name
-    notebook_card = (
-        By.XPATH,
-        f"//span[@class='project-button-title' and text()=' {NOTEBOOK_NAME} ']"
+    notebook_title = wait.until(
+        EC.visibility_of_element_located(
+            (
+                By.XPATH,
+                (
+                    "//span[contains(@class,'project-button-title') and "
+                    f"contains(normalize-space(.), '{NOTEBOOK_NAME}')]"
+                ),
+            )
+        )
     )
-    wait.until(EC.element_to_be_clickable(notebook_card)).click()
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", notebook_title)
+    clickable_targets = [
+        *notebook_title.find_elements(
+            By.XPATH,
+            (
+                "./ancestor::mat-card[contains(@class,'project-button-card')]"
+                "|./ancestor::project-button"
+                "|./ancestor::*[self::a or self::button or @role='button' or contains(@class,'primary-action-button')]"
+            ),
+        ),
+        notebook_title,
+    ]
+    clicked = False
+    for target in clickable_targets:
+        try:
+            wait.until(lambda _: target.is_displayed() and target.is_enabled())
+            try:
+                target.click()
+            except Exception:
+                # NotebookLM occasionally overlays cards briefly; JS click is a stable fallback.
+                driver.execute_script("arguments[0].click();", target)
+            clicked = True
+            break
+        except Exception:
+            continue
+    assert clicked, f"Could not click notebook card for '{NOTEBOOK_NAME}'"
 
     save_note = (By.XPATH, "//span[text()='Save to note']")
     wait.until(EC.visibility_of_element_located(save_note))
 
-    # 3. Wait for the chat input to be visible
-    chat_input = (By.CSS_SELECTOR, "textarea[placeholder='Start typing...']")
-    wait.until(EC.visibility_of_element_located(chat_input))
+    # 3. Wait for the chat input to be visible (NotebookLM UI varies by build)
+    chat_input = wait.until(
+        lambda d: (
+            d.find_elements(By.CSS_SELECTOR, "textarea[placeholder='Start typing...']")
+            or d.find_elements(By.CSS_SELECTOR, "textarea[placeholder*='Start']")
+            or d.find_elements(By.CSS_SELECTOR, "textarea[aria-label*='Ask']")
+            or d.find_elements(By.CSS_SELECTOR, "textarea")
+        )[0]
+    )
 
     # 4. Send a query that should produce a citation
-    input_el = driver.find_element(*chat_input)
+    input_el = chat_input
+    input_el.click()
     input_el.clear()
     input_el.send_keys(TEST_QUERY)
     input_el.send_keys(Keys.ENTER)
 
-    # Wait until "Save to note" is visible again (response rendered)
+    # 5. Wait for the AI response to render and stabilize
     wait.until(EC.visibility_of_element_located(save_note))
-
-    # 5. Wait for the AI response to appear
-    thinking_modal = (
-        By.XPATH,
-        "//div[contains(@class,'thinking-animation-container')]"
-    )
-    # Wait until thinking animation disappears
+    thinking_modal = (By.XPATH, "//div[contains(@class,'thinking-animation-container')]")
     wait.until(EC.invisibility_of_element_located(thinking_modal))
 
     last_answer_container = (
         By.XPATH,
-        "//mat-card-content[contains(@class,'to-user-message-inner-content')]"
+        "//mat-card-content[contains(@class,'to-user-message-inner-content')]",
     )
-    wait.until(EC.visibility_of_element_located(last_answer_container))
-
-    answer_container = driver.find_element(*last_answer_container)
-
-    # Capture some text from the answer (not asserted, just like Java code)
-    answer_text_snippet = answer_container.text
+    answer_container = wait.until(EC.visibility_of_element_located(last_answer_container))
+    # Ensure we don't capture a partial answer by waiting for non-trivial text.
+    wait.until(lambda d: len((answer_container.text or "").strip()) > 30)
+    answer_text_snippet = answer_container.text.strip()
    
 
     # 6. Locate the exact passage / citation link inside the answer (citation "1")
-    last_citation = (
-        By.XPATH,
-        "//button[@dialoglabel='Citation Details']//span[text()='1']"
-    )
-    wait.until(EC.element_to_be_clickable(last_citation))
+    def _first_citation_button(d):
+        candidates = (
+            d.find_elements(By.XPATH, "//button[@dialoglabel='Citation Details']//span[normalize-space()='1']/ancestor::button[1]")
+            or d.find_elements(By.XPATH, "//button[contains(@aria-label,'Citation') and .//span[normalize-space()='1']]")
+            or d.find_elements(By.XPATH, "//button[.//span[normalize-space()='1'] and (@dialoglabel='Citation Details' or contains(@aria-label,'Citation'))]")
+            or d.find_elements(By.XPATH, "//button[.//*[normalize-space()='1'] and contains(@class,'citation')]")
+        )
+        return candidates[0] if candidates else False
+
+    citation_btn = wait.until(_first_citation_button)
 
     # 7. Click the citation (exact passage link)
-    driver.find_element(*last_citation).click()
+    try:
+        citation_btn.click()
+    except Exception:
+        driver.execute_script("arguments[0].click();", citation_btn)
 
 
     # 8. Wait for the source passage panel/viewer to appear
-    source_panel = (By.CSS_SELECTOR, "div[class='elements-container']")
-    source_viewer = wait.until(EC.visibility_of_element_located(source_panel))
+    def _source_viewer(d):
+        candidates = (
+            d.find_elements(By.CSS_SELECTOR, "div.elements-container")
+            or d.find_elements(By.XPATH, "//div[contains(@class,'elements-container')]")
+            or d.find_elements(By.XPATH, "//div[contains(@class,'source') and .//span[contains(@class,'highlight')]]")
+            or d.find_elements(By.XPATH, "//div[.//span[contains(@class,'highlighted')]]")
+        )
+        return candidates[0] if candidates else False
+
+    source_viewer = wait.until(_source_viewer)
 
     # 9. Verify the source title (if present)
-    try:
-        source_title_locator = (
-            By.XPATH,
-            "//div[@class='source-title-container']//div[contains(@class,'source-title')]"
-        )
-        source_title_element = source_viewer.find_element(*source_title_locator)
-        actual_source_title = source_title_element.text
+    source_title_candidates = (
+        source_viewer.find_elements(By.XPATH, ".//div[contains(@class,'source-title')]")
+        or source_viewer.find_elements(By.XPATH, ".//div[contains(@class,'source-title-container')]//div")
+        or driver.find_elements(By.XPATH, "//div[contains(@class,'source-title')]")
+    )
+    if source_title_candidates:
+        actual_source_title = source_title_candidates[0].text
         print("Source title:", actual_source_title)
-
         if EXPECTED_SOURCE_TITLE and EXPECTED_SOURCE_TITLE.strip():
             assert EXPECTED_SOURCE_TITLE in actual_source_title, (
                 f"Expected source title to contain '{EXPECTED_SOURCE_TITLE}' "
                 f"but got '{actual_source_title}'"
             )
-    except NoSuchElementException:
-        print(
-            "Source title element not found – "
-            "adjust locator if you want this assertion."
-        )
+    else:
+        print("Source title element not found; continuing with highlighted passage validation.")
 
     # 10. Collect highlighted span texts from the source passage panel
-    highlighted_spans = driver.find_elements(
-        By.XPATH,
-        "//div[@class='elements-container']//span[contains(@class, 'highlighted')]"
+    highlighted_spans = wait.until(
+        lambda d: (
+            source_viewer.find_elements(By.XPATH, ".//span[contains(@class, 'highlighted')]")
+            or source_viewer.find_elements(By.XPATH, ".//*[contains(@class, 'highlight')]")
+            or d.find_elements(By.XPATH, "//div[contains(@class,'elements-container')]//span[contains(@class,'highlighted')]")
+            or d.find_elements(By.XPATH, "//*[contains(@class,'highlighted')]")
+        )
     )
 
     passage_text = []
